@@ -4,9 +4,11 @@ import com.inditex.prices.application.port.in.GetApplicablePriceUseCasePort;
 import com.inditex.prices.application.port.out.PriceRepositoryPort;
 import com.inditex.prices.domain.model.Price;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
+@Service
 @RequiredArgsConstructor
 public class GetApplicablePriceUseCase implements GetApplicablePriceUseCasePort {
 
