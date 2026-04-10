@@ -1,0 +1,168 @@
+openapi: 3.0.3
+info:
+  title: Inditex Price Service API
+  version: 1.0.0
+  description: |
+    REST API to resolve the applicable price for a product, brand and application date.
+servers:
+  - url: http://localhost:8080
+    description: Local environment
+tags:
+  - name: Prices
+    description: Price query operations
+paths:
+  /api/v1/prices:
+    get:
+      tags:
+        - Prices
+      operationId: getApplicablePrice
+      summary: Get the applicable price for a product
+      description: |
+        Returns the price that must be applied for a product and brand at a given application date.
+        When multiple price records match, the record with the highest priority is selected.
+      parameters:
+        - $ref: '#/components/parameters/ApplicationDate'
+        - $ref: '#/components/parameters/ProductId'
+        - $ref: '#/components/parameters/BrandId'
+      responses:
+        '200':
+          description: Applicable price found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceResponse'
+              examples:
+                success:
+                  summary: Price found for 2020-06-14T16:00:00
+                  value:
+                    productId: 35455
+                    brandId: 1
+                    priceList: 2
+                    startDate: '2020-06-14T15:00:00'
+                    endDate: '2020-06-14T18:30:00'
+                    price: 25.45
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidParameters:
+                  summary: Invalid request parameters
+                  value:
+                    code: INVALID_REQUEST
+                    message: One or more request parameters are invalid
+                    path: /api/v1/prices
+                    timestamp: '2026-04-10T12:00:00'
+        '404':
+          description: No applicable price found for the given criteria
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                notFound:
+                  summary: Price not found
+                  value:
+                    code: PRICE_NOT_FOUND
+                    message: No price was found for the requested criteria
+                    path: /api/v1/prices
+                    timestamp: '2026-04-10T12:00:00'
+components:
+  parameters:
+    ApplicationDate:
+      name: applicationDate
+      in: query
+      required: true
+      description: Application date and time used to resolve the applicable price
+      schema:
+        type: string
+        format: date-time
+        example: '2020-06-14T16:00:00'
+    ProductId:
+      name: productId
+      in: query
+      required: true
+      description: Product identifier
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 35455
+    BrandId:
+      name: brandId
+      in: query
+      required: true
+      description: Brand identifier
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+        example: 1
+  schemas:
+    PriceResponse:
+      type: object
+      required:
+        - productId
+        - brandId
+        - priceList
+        - startDate
+        - endDate
+        - price
+      properties:
+        productId:
+          type: integer
+          format: int64
+          description: Product identifier
+          example: 35455
+        brandId:
+          type: integer
+          format: int64
+          description: Brand identifier
+          example: 1
+        priceList:
+          type: integer
+          format: int64
+          description: Identifier of the applicable price list
+          example: 2
+        startDate:
+          type: string
+          format: date-time
+          description: Start date of the applicable price range
+          example: '2020-06-14T15:00:00'
+        endDate:
+          type: string
+          format: date-time
+          description: End date of the applicable price range
+          example: '2020-06-14T18:30:00'
+        price:
+          type: number
+          format: double
+          description: Final price to apply
+          example: 25.45
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+        - path
+        - timestamp
+      properties:
+        code:
+          type: string
+          description: Stable application error code
+          example: PRICE_NOT_FOUND
+        message:
+          type: string
+          description: Human-readable error description
+          example: No price was found for the requested criteria
+        path:
+          type: string
+          description: Request path
+          example: /api/v1/prices
+        timestamp:
+          type: string
+          format: date-time
+          description: Error generation timestamp
+          example: '2026-04-10T12:00:00'
